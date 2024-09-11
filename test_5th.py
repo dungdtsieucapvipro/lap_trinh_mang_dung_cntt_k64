@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-response = requests.get('https://imgflip.com/memetemplates?page=2')
+response = requests.get('https://imgflip.com/memetemplates?page=1')
 
 if response.status_code == 200:
     soup = BeautifulSoup(response.content, 'html.parser')
