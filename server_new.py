@@ -6,21 +6,29 @@ def fetch_definition(url):
         # Mở trình duyệt
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        # Truy cập URL
-        page.goto(url)
         
-        # Lấy nội dung của thẻ định nghĩa tiếng Anh (div.def ddef_d db)
-        english_definition = page.locator("div.def.ddef_d.db").inner_text()
+        try:
+            # Truy cập URL với thời gian timeout cao hơn
+            page.goto(url, wait_until="load", timeout=60000)  # Thay đổi timeout thành 60 giây
+            
+            # Lấy nội dung của thẻ định nghĩa tiếng Anh (div.def ddef_d db)
+            english_definition = page.locator("div.def.ddef_d.db").inner_text()
+            
+            # Lấy nội dung của thẻ định nghĩa tiếng Việt (span.trans.dtrans)
+            vietnamese_translation = page.locator("span.trans.dtrans").inner_text()
+        except Exception as e:
+            print(f"Error while fetching definition: {e}")
+            return None, None
+        finally:
+            browser.close()
         
-        # Lấy nội dung của thẻ định nghĩa tiếng Việt (span.trans.dtrans)
-        vietnamese_translation = page.locator("span.trans.dtrans").inner_text()
-        
-        browser.close()
         return english_definition, vietnamese_translation
 
-def extract_word_from_url(url):
-    # Tách từ cuối cùng sau dấu '/'
-    return url.rstrip('/').split('/')[-1]
+
+def extract_word_from_url(word):
+    # Tạo URL từ từ tiếng Anh
+    base_url = "https://dictionary.cambridge.org/vi/dictionary/english-vietnamese/"
+    return base_url + word
 
 def start_server():
     host = '127.0.0.1'
@@ -40,15 +48,15 @@ def start_server():
                     break
                 
                 try:
-                    # Trích xuất từ cuối cùng từ URL
-                    word = extract_word_from_url(data)
+                    # Tạo URL từ từ tiếng Anh
+                    url = extract_word_from_url(data.strip())
                     
                     # Truy cập URL mà client yêu cầu
-                    english_definition, vietnamese_translation = fetch_definition(data)
+                    english_definition, vietnamese_translation = fetch_definition(url)
                     
                     # Chuẩn bị phản hồi với từ cuối cùng từ URL
                     response = (
-                        f"{word}\n"  # Thêm từ cuối cùng của URL (ví dụ: hello)
+                        f"Word: {data.strip()}\n"  # Thêm từ cuối cùng của URL (ví dụ: hello)
                         f"English definition: {english_definition}\n"
                         f"Vietnamese translation: {vietnamese_translation}"
                     )
