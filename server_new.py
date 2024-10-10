@@ -11,11 +11,13 @@ def fetch_definition(url):
             # Truy cập URL với thời gian timeout cao hơn
             page.goto(url, wait_until="load", timeout=60000)  # Thay đổi timeout thành 60 giây
             
-            # Lấy nội dung của thẻ định nghĩa tiếng Anh (div.def ddef_d db)
-            english_definition = page.locator("div.def.ddef_d.db").inner_text()
+            # Lấy tất cả nội dung của thẻ định nghĩa tiếng Anh (div.def ddef_d db)
+            english_definitions = page.locator("div.def.ddef_d.db").all_inner_texts()
+            english_definition = "\n".join(english_definitions)  # Ghép tất cả định nghĩa thành một chuỗi
             
-            # Lấy nội dung của thẻ định nghĩa tiếng Việt (span.trans.dtrans)
-            vietnamese_translation = page.locator("span.trans.dtrans").inner_text()
+            # Lấy tất cả nội dung của thẻ định nghĩa tiếng Việt (span.trans.dtrans)
+            vietnamese_translations = page.locator("span.trans.dtrans").all_inner_texts()
+            vietnamese_translation = "\n".join(vietnamese_translations)  # Ghép tất cả bản dịch thành một chuỗi
         except Exception as e:
             print(f"Error while fetching definition: {e}")
             return None, None
@@ -23,6 +25,8 @@ def fetch_definition(url):
             browser.close()
         
         return english_definition, vietnamese_translation
+
+
 
 
 def extract_word_from_url(word):
