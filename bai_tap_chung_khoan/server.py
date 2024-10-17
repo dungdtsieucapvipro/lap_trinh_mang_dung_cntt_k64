@@ -1,5 +1,5 @@
-import time
 import socket
+import time
 import json
 from playwright.sync_api import sync_playwright
 
@@ -92,18 +92,28 @@ def fetch_stock_data():
             })
         return result
 
-# Thiết lập server socket
 def start_server(host='127.0.0.1', port=65432):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
         print(f"Server đang lắng nghe trên {host}:{port}")
-        conn, addr = s.accept()
-        with conn:
-            print('Kết nối từ', addr)
-            data = fetch_stock_data()
-            json_data = json.dumps(data) + "<END>"
-            conn.sendall(json_data.encode('utf-8'))
+        while True:
+            conn, addr = s.accept()
+            with conn:
+                print('Kết nối từ', addr)
+                data = conn.recv(1024).decode('utf-8')
+                if data:
+                    stock_code = data.strip()
+                    stock_data = fetch_stock_data()
+                    if stock_code == "ALL":
+                        json_data = json.dumps(stock_data) + "<END>"
+                    else:
+                        result = next((item for item in stock_data if item["stock_code"] == stock_code), None)
+                        if result:
+                            json_data = json.dumps(result) + "<END>"
+                        else:
+                            json_data = json.dumps({"error": "Stock code not found"}) + "<END>"
+                    conn.sendall(json_data.encode('utf-8'))
 
 if __name__ == "__main__":
     start_server()
