@@ -15,7 +15,7 @@ def handle_client(client_socket):
 
 def start_server(mode="sequential"):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(("127.0.0.1", 12347))  # Đổi sang cổng 12346
+    server_socket.bind(("127.0.0.1", 12347))  
     server_socket.listen(5)
     print("Server dang lang nghe o port 12347...")
 
